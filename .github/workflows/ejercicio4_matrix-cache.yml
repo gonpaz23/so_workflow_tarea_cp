@@ -1,4 +1,4 @@
-name: Ejercicio 4 - Matriz y Cache
+name: Ejercicio 4 - Matriz y Cache (Corregido)
 
 on: [push, workflow_dispatch]
 
@@ -10,11 +10,14 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         node-version: [16.x, 18.x]
+      # Evita que se cancelen todos si uno falla
+      fail-fast: false
     
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout del código
+      uses: actions/checkout@v3
     
-    - name: Cache de node_modules
+    - name: Cache de dependencias npm
       uses: actions/cache@v3
       with:
         path: ~/.npm
@@ -22,26 +25,68 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-node-
     
-    - name: Instalar Node.js
+    - name: Instalar Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v3
       with:
         node-version: ${{ matrix.node-version }}
     
     - name: Información del sistema
+      shell: bash
       run: |
+        echo "=== INFORMACIÓN DEL SISTEMA ==="
         echo "Sistema Operativo: ${{ runner.os }}"
         echo "Node.js: ${{ matrix.node-version }}"
-        echo "Directorio: ${{ github.workspace }}"
+        echo "Directorio de trabajo: ${{ github.workspace }}"
+        echo "Shell por defecto: ${{ runner.shell }}"
     
-    - name: Ejecutar en cada OS
+    - name: Ejecutar comandos específicos por OS
+      shell: bash
       run: |
-        if [ "${{ runner.os }}" == "Windows" ]; then
-          echo "Ejecutando en Windows..."
-          dir
-        elif [ "${{ runner.os }}" == "Linux" ]; then
-          echo "Ejecutando en Linux..."
-          ls -la
+        # Este script ahora es compatible porque usamos 'shell: bash'
+        # incluso en Windows (GitHub incluye Git Bash)
+        echo "📁 Contenido del directorio:"
+        ls -la
+        
+        echo ""
+        echo "🔍 Verificando sistema..."
+        
+        if [[ "${{ runner.os }}" == "Linux" ]]; then
+          echo "✅ Ejecutando en Linux (Ubuntu)"
+          echo "Comando de ejemplo:"
+          uname -a
+          
+        elif [[ "${{ runner.os }}" == "Windows" ]]; then
+          echo "✅ Ejecutando en Windows"
+          echo "Comandos de Windows desde bash:"
+          cmd.exe /c ver 2>/dev/null || echo "No se pudo obtener versión de Windows"
+          dir 2>/dev/null || echo "Comando 'dir' no disponible en bash"
+          
+        elif [[ "${{ runner.os }}" == "macOS" ]]; then
+          echo "✅ Ejecutando en macOS"
+          echo "Comando de ejemplo:"
+          sw_vers || echo "No se pudo obtener info de macOS"
+          
         else
-          echo "Ejecutando en macOS..."
-          ls -la
+          echo "⚠️  Sistema operativo no reconocido"
         fi
+    
+    - name: Verificar Node.js funciona
+      shell: bash
+      run: |
+        echo "🧪 Probando Node.js..."
+        node --version
+        npm --version
+        
+        # Crear y ejecutar un script simple de Node
+        cat > test-node.js << 'EOF'
+        console.log("✅ Node.js funcionando correctamente en ${{ runner.os }}");
+        console.log("Versión de Node:", process.version);
+        console.log("Plataforma:", process.platform);
+        EOF
+        
+        node test-node.js
+    
+    - name: Finalizar con éxito
+      shell: bash
+      run: |
+        echo "🎉 ¡Job completado exitosamente en ${{ runner.os }} con Node ${{ matrix.node-version }}!"
