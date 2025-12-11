@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   workflow_dispatch:  # Permite ejecución manual
 
+# 📌 PERMISOS ACTUALIZADOS para GitHub Pages
 permissions:
   contents: read
   pages: write
@@ -13,18 +14,20 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }} # OPCIONAL: para obtener la URL
     
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+    - name: Checkout del código
+      uses: actions/checkout@v4  # Puedes usar v3 o v4
     
-    - name: Configurar Pages
-      uses: actions/configure-pages@v3
-    
-    - name: Subir artefactos
-      uses: actions/upload-pages-artifact@v2
+    # ⬇️ ACCIÓN CRÍTICA ACTUALIZADA (Causa del error)
+    - name: Subir artefacto del sitio
+      uses: actions/upload-pages-artifact@v3  # ✅ Cambia de v2 a v3
       with:
-        path: '.'
+        path: '.'  # Sube todo el directorio actual
     
+    # ⬇️ ACCIÓN CRÍTICA ACTUALIZADA
     - name: Desplegar a GitHub Pages
-      uses: actions/deploy-pages@v2
+      uses: actions/deploy-pages@v4  # ✅ Cambia de v2 a v4
