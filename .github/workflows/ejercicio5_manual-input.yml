@@ -1,0 +1,51 @@
+name: Ejercicio 5 - Workflow Manual
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Entorno de despliegue'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+        - development
+        - staging
+        - production
+      version:
+        description: 'Versión a desplegar'
+        required: true
+        default: '1.0.0'
+      confirm:
+        description: '¿Confirmar despliegue?'
+        type: boolean
+        default: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    if: inputs.confirm == true
+    
+    steps:
+    - name: Mostrar parámetros
+      run: |
+        echo "🎯 Entorno: ${{ github.event.inputs.environment }}"
+        echo "🔢 Versión: ${{ github.event.inputs.version }}"
+        echo "👤 Ejecutado por: ${{ github.actor }}"
+    
+    - name: Simular despliegue
+      run: |
+        echo "Iniciando despliegue en ${{ github.event.inputs.environment }}..."
+        echo "Versión: ${{ github.event.inputs.version }}"
+        sleep 5
+        echo "✅ Despliegue simulado completado!"
+    
+    - name: Notificación
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ Workflow completado exitosamente"
+        else
+          echo "❌ Workflow falló"
+        fi
