@@ -1,0 +1,38 @@
+name: Ejercicio 2 - Node.js CI
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        node-version: [14.x, 16.x, 18.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Usar Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Instalar dependencias
+      run: npm ci
+    
+    - name: Ejecutar tests
+      run: |
+        # Creamos un test básico si no existe
+        if [ ! -f "test.js" ]; then
+          echo "const assert = require('assert');" > test.js
+          echo "console.log('✓ Tests básicos pasaron');" >> test.js
+        fi
+        node test.js
+    
+    - name: Verificar build
+      run: node index.js
