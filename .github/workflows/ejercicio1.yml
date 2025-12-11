@@ -1,0 +1,24 @@
+name: Ejercicio 1 - Hola Mundo
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  saludar:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout del código
+      uses: actions/checkout@v3
+    
+    - name: Hola Mundo
+      run: echo "¡Mi primer workflow en ejecucion!"
+    
+    - name: Mostrar información
+      run: |
+        echo "Fecha: $(date)"
+        echo "Usuario: ${{ github.actor }}"
+        echo "Repositorio: ${{ github.repository }}"
