@@ -1,0 +1,47 @@
+name: Ejercicio 4 - Matriz y Cache
+
+on: [push, workflow_dispatch]
+
+jobs:
+  test-matrix:
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node-version: [16.x, 18.x]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Cache de node_modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+    
+    - name: Instalar Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+    
+    - name: Información del sistema
+      run: |
+        echo "Sistema Operativo: ${{ runner.os }}"
+        echo "Node.js: ${{ matrix.node-version }}"
+        echo "Directorio: ${{ github.workspace }}"
+    
+    - name: Ejecutar en cada OS
+      run: |
+        if [ "${{ runner.os }}" == "Windows" ]; then
+          echo "Ejecutando en Windows..."
+          dir
+        elif [ "${{ runner.os }}" == "Linux" ]; then
+          echo "Ejecutando en Linux..."
+          ls -la
+        else
+          echo "Ejecutando en macOS..."
+          ls -la
+        fi
