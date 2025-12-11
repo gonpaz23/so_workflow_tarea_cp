@@ -9,9 +9,9 @@ on:
         default: 'staging'
         type: choice
         options:
-        - development
-        - staging
-        - production
+          - development
+          - staging
+          - production
       version:
         description: 'Versión a desplegar'
         required: true
@@ -25,27 +25,65 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     
-    if: inputs.confirm == true
+    if: ${{ github.event.inputs.confirm == 'true' }}
     
     steps:
-    - name: Mostrar parámetros
-      run: |
-        echo "🎯 Entorno: ${{ github.event.inputs.environment }}"
-        echo "🔢 Versión: ${{ github.event.inputs.version }}"
-        echo "👤 Ejecutado por: ${{ github.actor }}"
-    
-    - name: Simular despliegue
-      run: |
-        echo "Iniciando despliegue en ${{ github.event.inputs.environment }}..."
-        echo "Versión: ${{ github.event.inputs.version }}"
-        sleep 5
-        echo "✅ Despliegue simulado completado!"
-    
-    - name: Notificación
-      if: always()
-      run: |
-        if [ "${{ job.status }}" == "success" ]; then
-          echo "✅ Workflow completado exitosamente"
-        else
-          echo "❌ Workflow falló"
-        fi
+      - name: Mostrar parámetros de entrada
+        run: |
+          echo "🎯 Entorno seleccionado: ${{ github.event.inputs.environment }}"
+          echo "🔢 Versión: ${{ github.event.inputs.version }}"
+          echo "👤 Ejecutado por: ${{ github.actor }}"
+          echo "📅 Fecha de ejecución: $(date)"
+      
+      - name: Preparar entorno simulado
+        run: |
+          echo "Preparando entorno de ${{ github.event.inputs.environment }}..."
+          # Crear estructura de directorios según entorno
+          mkdir -p deploy-artifacts
+          echo "Entorno: ${{ github.event.inputs.environment }}" > deploy-artifacts/config.txt
+          echo "Versión: ${{ github.event.inputs.version }}" >> deploy-artifacts/config.txt
+          echo "Timestamp: $(date)" >> deploy-artifacts/config.txt
+      
+      - name: Simular proceso de despliegue
+        run: |
+          echo "🚀 Iniciando despliegue en ${{ github.event.inputs.environment }}..."
+          echo "Versión: ${{ github.event.inputs.version }}"
+          
+          # Simular diferentes pasos según el entorno
+          if [[ "${{ github.event.inputs.environment }}" == "development" ]]; then
+            echo "🔧 Configurando entorno de desarrollo..."
+            sleep 2
+          elif [[ "${{ github.event.inputs.environment }}" == "staging" ]]; then
+            echo "🧪 Ejecutando pruebas en staging..."
+            sleep 3
+          elif [[ "${{ github.event.inputs.environment }}" == "production" ]]; then
+            echo "⚠️  DESPLIEGUE EN PRODUCCIÓN - Requiere confirmación"
+            sleep 5
+          fi
+          
+          echo "✅ Proceso de despliegue simulado completado!"
+      
+      - name: Generar reporte de despliegue
+        run: |
+          echo "📊 REPORTE DE DESPLIEGUE" > deploy-report.md
+          echo "========================" >> deploy-report.md
+          echo "" >> deploy-report.md
+          echo "- **Entorno**: ${{ github.event.inputs.environment }}" >> deploy-report.md
+          echo "- **Versión**: ${{ github.event.inputs.version }}" >> deploy-report.md
+          echo "- **Estado**: COMPLETADO" >> deploy-report.md
+          echo "- **Timestamp**: $(date)" >> deploy-report.md
+          
+          cat deploy-report.md
+      
+      - name: Notificación final
+        if: always()
+        run: |
+          if [[ "${{ job.status }}" == "success" ]]; then
+            echo "✅ Workflow '${{ github.workflow }}' completado exitosamente"
+            echo "📋 Resumen:"
+            echo "   Entorno: ${{ github.event.inputs.environment }}"
+            echo "   Versión: ${{ github.event.inputs.version }}"
+            echo "   Confirmado: ${{ github.event.inputs.confirm }}"
+          else
+            echo "❌ Workflow falló con estado: ${{ job.status }}"
+          fi
