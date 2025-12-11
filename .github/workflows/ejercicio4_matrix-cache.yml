@@ -1,4 +1,4 @@
-name: Ejercicio 4 - Matriz y Cache (Corregido)
+name: Ejercicio 4 - Matriz y Cache
 
 on: [push, workflow_dispatch]
 
